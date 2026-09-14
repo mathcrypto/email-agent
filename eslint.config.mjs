@@ -1,18 +1,55 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import prettier from "eslint-config-prettier";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
+export default [
+  { ignores: ["node_modules/**", "dist/**", "extension/dist/**"] },
 
-export default eslintConfig;
+  // Hono API (Node, TypeScript)
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ["server/**/*.ts", "test/**/*.ts"],
+  })),
+  {
+    files: ["server/**/*.ts", "test/**/*.ts"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+
+  // Chrome extension (Vite + TypeScript)
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ["extension/src/**/*.ts", "extension/*.ts"],
+  })),
+  {
+    files: ["extension/src/**/*.ts", "extension/*.ts"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.webextensions,
+      },
+    },
+  },
+
+  // Legacy flat JS (if any remain)
+  {
+    ...js.configs.recommended,
+    files: ["extension/**/*.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "script",
+      globals: {
+        ...globals.browser,
+        ...globals.webextensions,
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      "no-empty": ["error", { allowEmptyCatch: true }],
+    },
+  },
+
+  prettier,
+];

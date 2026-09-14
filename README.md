@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Email Agent
 
-## Getting Started
+Chrome extension that puts an email reply agent **inside Gmail**.
 
-First, run the development server:
+**Not a Next.js app.** Product is the extension; `server/` is a thin Hono API.
+
+## Local use only
+
+This is a **local demo**, not production-ready. Do not expose the API on the public internet.
+
+Hardening included for local use:
+- Server binds to **`127.0.0.1` only**
+- Protected routes require **`Authorization: Bearer <LOCAL_API_SECRET>`** (extension gets the secret at build time)
+
+Still demo-grade:
+- OAuth puts access/refresh tokens in the callback page before handing them to the extension
+- Agent endpoints trust thread bodies from the extension
+- Tokens live in `chrome.storage.local`; Gmail scope is read-only and nothing auto-sends
+
+## Typical MV3 split
+
+| Piece | Role |
+| --- | --- |
+| **Content script** | Detect open thread id, inject into compose |
+| **Side panel** | UI (vanilla TypeScript) |
+| **Background** | Auth storage, network to the API |
+| **Server** | Secrets, OpenAI, Gmail API |
+
+Thread content comes from the Gmail API (`users.threads.get`). The content script only supplies the thread id and inserts the draft into compose. Never auto-send.
+
+## Setup
 
 ```bash
+cp .env.example .env.local   # set keys + LOCAL_API_SECRET
+npm install
+npm run build:ext            # bakes LOCAL_API_SECRET into the extension
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Google Cloud: enable **Gmail API**, OAuth redirect  
+   `http://localhost:3000/auth/callback/google`
+2. Consent scopes: `email`, `profile`, `gmail.readonly` (add yourself as a **test user**)
+3. Load **`extension/dist`** in Chrome
+4. **Disconnect / Connect Gmail again** after scope changes
+5. Rebuild the extension whenever you change `LOCAL_API_SECRET`

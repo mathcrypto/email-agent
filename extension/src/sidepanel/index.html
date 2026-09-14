@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Email Agent</title>
+    <link rel="stylesheet" href="./sidepanel.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <p class="eyebrow">Email Agent</p>
+        <h1 id="auth-title">Inside Gmail</h1>
+      </div>
+      <div class="top-actions">
+        <button id="refresh" type="button" class="link">Refresh</button>
+        <button id="disconnect" type="button" class="link hidden">Disconnect</button>
+      </div>
+    </header>
+
+    <button id="connect" type="button" class="btn primary hidden">Connect Gmail</button>
+    <p id="auth-line" class="meta">Checking…</p>
+
+    <section class="block">
+      <p class="step">1 · This email</p>
+      <p id="thread-line" class="thread">Open a thread in Gmail</p>
+      <p id="from-line" class="meta"></p>
+      <div class="summary-box">
+        <div class="summary-head">
+          <span id="urgency" class="pill hidden"></span>
+        </div>
+        <p id="summary-line" class="summary">Summary appears when you open a thread.</p>
+        <p id="ask-line" class="ask hidden"></p>
+      </div>
+    </section>
+
+    <section class="block">
+      <p class="step">2 · Write a reply</p>
+      <textarea
+        id="instructions"
+        rows="2"
+        placeholder="What should the reply say? (optional)"
+      ></textarea>
+      <div class="tones" id="tones" aria-label="Tone">
+        <button type="button" class="tone active" data-tone="concise">Concise</button>
+        <button type="button" class="tone" data-tone="warm">Warm</button>
+        <button type="button" class="tone" data-tone="formal">Formal</button>
+      </div>
+      <button id="draft-btn" type="button" class="btn primary">Suggest draft</button>
+      <p id="status" class="meta status"></p>
+    </section>
+
+    <section class="block draft-section">
+      <p class="step">3 · Suggested draft</p>
+      <pre id="result" class="draft-body">No draft yet.</pre>
+
+      <div id="draft-actions" class="draft-actions hidden">
+        <button id="insert" type="button" class="btn primary flex">
+          Insert into Gmail
+        </button>
+        <button id="copy" type="button" class="btn flex">Copy</button>
+      </div>
+    </section>
+
+    <p class="fine">Never sends — you send from Gmail</p>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

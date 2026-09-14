@@ -1,0 +1,281 @@
+:root {
+  --bg: #f3efe6;
+  --panel: #fbf8f2;
+  --ink: #1c1915;
+  --muted: #6b645a;
+  --line: #d4cdc0;
+  --accent: #2f5d50;
+  --accent-ink: #f7f3ea;
+  --high: #8a4b2e;
+  --med: #6b645a;
+  --low: #2f5d50;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 16px 14px 28px;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(47, 93, 80, 0.08), transparent 42%),
+    var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: start;
+  margin-bottom: 4px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+h1 {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-family: Georgia, "Source Serif 4", serif;
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.step {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.block {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.block:first-of-type {
+  border-top: 0;
+  padding-top: 8px;
+}
+
+.meta,
+.fine {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.thread {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.summary-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.summary-head {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 0;
+}
+
+.summary {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ask {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ask::before {
+  content: "Main ask · ";
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pill {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.pill.high {
+  color: var(--high);
+  border-color: rgba(138, 75, 46, 0.35);
+}
+.pill.medium {
+  color: var(--med);
+}
+.pill.low {
+  color: var(--low);
+  border-color: rgba(47, 93, 80, 0.35);
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: #fffdf8;
+  font: inherit;
+  color: var(--ink);
+}
+
+textarea {
+  resize: vertical;
+}
+
+.tones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+
+.tone {
+  border: 1px solid var(--line);
+  background: #fffdf8;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font: inherit;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.tone.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: inherit;
+  cursor: pointer;
+  background: #fffdf8;
+}
+
+.btn.primary {
+  width: 100%;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn.primary.narrow {
+  width: auto;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn.ghost {
+  padding: 4px 10px;
+  font-size: 12px;
+  width: auto;
+}
+
+.link {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.status {
+  min-height: 1.2em;
+  margin: 8px 0 0;
+}
+
+.draft-body {
+  margin: 0;
+  padding: 12px;
+  min-height: 7em;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.draft-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn.flex {
+  flex: 1;
+  width: auto;
+}
+
+.fine {
+  margin-top: 18px;
+  text-align: center;
+}
+
+.streaming::after {
+  content: "▍";
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
