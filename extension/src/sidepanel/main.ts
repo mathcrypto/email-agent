@@ -37,7 +37,7 @@ const summaryLine = $("summary-line");
 const askLine = $("ask-line");
 const urgencyEl = $("urgency");
 
-const POLL_MS = 4000;
+const POLL_MS = 2500;
 
 type ReplyTone = "concise" | "warm" | "formal";
 
@@ -47,6 +47,7 @@ let pageCache: ThreadContext | null = null;
 let lastThreadKey = "";
 let summarizeInFlight = false;
 let refreshInFlight = false;
+let refreshQueued = false;
 let accountEmail = "";
 
 function setStatus(text = "") {
@@ -85,6 +86,9 @@ chrome.runtime.onMessage.addListener((message) => {
   const msg = message as ExtensionMessage;
   if (msg?.type === "STREAM_DELTA") {
     setDraft(msg.full || "", { streaming: true });
+  }
+  if (msg?.type === "THREAD_CHANGED") {
+    void refreshAuthAndContext();
   }
 });
 
@@ -133,7 +137,10 @@ async function runSummarize(force = false) {
 }
 
 async function refreshAuthAndContext() {
-  if (refreshInFlight) return Boolean(pageCache);
+  if (refreshInFlight) {
+    refreshQueued = true;
+    return Boolean(pageCache);
+  }
   refreshInFlight = true;
 
   try {
@@ -163,6 +170,15 @@ async function refreshAuthAndContext() {
       pageCache = null;
       lastThreadKey = "";
       return false;
+    }
+
+    // Optimistic UI while Gmail API loads the new thread
+    if (open.threadId !== lastThreadKey) {
+      threadLine.textContent = "Loading thread…";
+      fromLine.textContent = "";
+      summaryLine.textContent = "Summarizing…";
+      askLine.classList.add("hidden");
+      urgencyEl.classList.add("hidden");
     }
 
     const gmail = await apiFetch("/gmail/thread", {
@@ -208,6 +224,10 @@ async function refreshAuthAndContext() {
     return true;
   } finally {
     refreshInFlight = false;
+    if (refreshQueued) {
+      refreshQueued = false;
+      void refreshAuthAndContext();
+    }
   }
 }
 

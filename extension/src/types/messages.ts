@@ -37,7 +37,8 @@ export type ExtensionMessage =
   | { type: "API_FETCH"; method?: string; path: string; body?: unknown }
   | { type: "API_STREAM"; path: string; body: unknown }
   | { type: "TO_CONTENT"; payload: ContentPayload; tabId?: number }
-  | { type: "STREAM_DELTA"; delta: string; full: string };
+  | { type: "STREAM_DELTA"; delta: string; full: string }
+  | { type: "THREAD_CHANGED"; threadId: string | null };
 
 export type ExternalAuthMessage = {
   type: "EMAIL_AGENT_AUTH";

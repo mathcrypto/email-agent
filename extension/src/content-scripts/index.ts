@@ -1,42 +1,60 @@
 import type { ContentPayload } from "../types/messages";
 import "./badge.css";
 
+const FOLDER_SEGMENTS = new Set([
+  "inbox",
+  "sent",
+  "drafts",
+  "snoozed",
+  "starred",
+  "imp",
+  "all",
+  "spam",
+  "trash",
+  "chats",
+  "scheduled",
+  "important",
+]);
 
-function extractThreadId(): string | null {
-  const perm =
-    document
-      .querySelector("[data-legacy-thread-id]")
-      ?.getAttribute("data-legacy-thread-id") ||
-    document
-      .querySelector("[data-thread-perm-id]")
-      ?.getAttribute("data-thread-perm-id") ||
-    document
-      .querySelector("h2[data-thread-perm-id]")
-      ?.getAttribute("data-thread-perm-id");
-  if (perm) return perm;
-
+function threadIdFromHash(): string | null {
   const cleaned = (location.hash || "").replace(/^#/, "");
   const parts = cleaned.split("/").filter(Boolean);
   for (let i = parts.length - 1; i >= 0; i -= 1) {
     const part = decodeURIComponent(parts[i]);
-    if (
-      [
-        "inbox",
-        "sent",
-        "drafts",
-        "snoozed",
-        "starred",
-        "imp",
-        "all",
-        "spam",
-        "trash",
-      ].includes(part)
-    ) {
-      continue;
+    if (FOLDER_SEGMENTS.has(part.toLowerCase())) continue;
+    // Labels / search tokens — skip short non-id segments
+    if (part.length < 10) continue;
+    // Gmail thread ids: hex (legacy) or FMfcgz… style
+    if (/^[0-9a-f]{10,}$/i.test(part) || /^[A-Za-z0-9_-]{10,}$/.test(part)) {
+      return part;
     }
-    if (part.length >= 10) return part;
   }
   return null;
+}
+
+function threadIdFromDom(): string | null {
+  // Prefer the visible conversation — bare document.querySelector often
+  // returns a stale thread still left in the DOM after SPA navigation.
+  const main = document.querySelector('[role="main"]');
+  const scope = main || document;
+  return (
+    scope
+      .querySelector("[data-legacy-thread-id]")
+      ?.getAttribute("data-legacy-thread-id") ||
+    scope
+      .querySelector("[data-thread-perm-id]")
+      ?.getAttribute("data-thread-perm-id") ||
+    scope
+      .querySelector("h2[data-thread-perm-id]")
+      ?.getAttribute("data-thread-perm-id") ||
+    null
+  );
+}
+
+function extractThreadId(): string | null {
+  // Prefer the visible conversation's legacy id (API-compatible). Hash is a
+  // fallback while the DOM catches up after SPA navigation.
+  return threadIdFromDom() || threadIdFromHash();
 }
 
 function getOpenThread() {
@@ -142,6 +160,49 @@ function isExtensionAlive() {
     return false;
   }
 }
+
+let lastAnnouncedThreadId: string | null | undefined;
+
+function announceThreadChange() {
+  if (!isExtensionAlive()) return;
+  const threadId = extractThreadId();
+  if (threadId === lastAnnouncedThreadId) return;
+  lastAnnouncedThreadId = threadId;
+  try {
+    chrome.runtime.sendMessage({ type: "THREAD_CHANGED", threadId });
+  } catch {
+    // Extension reloaded — ignore
+  }
+}
+
+let announceTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleAnnounce(delayMs = 200) {
+  if (announceTimer) clearTimeout(announceTimer);
+  announceTimer = setTimeout(() => {
+    announceTimer = null;
+    announceThreadChange();
+  }, delayMs);
+}
+
+window.addEventListener("hashchange", () => {
+  // Hash flips first; force re-check once DOM has likely updated.
+  lastAnnouncedThreadId = undefined;
+  scheduleAnnounce(300);
+});
+window.addEventListener("popstate", () => {
+  lastAnnouncedThreadId = undefined;
+  scheduleAnnounce(300);
+});
+
+const observer = new MutationObserver(() => scheduleAnnounce());
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: ["data-legacy-thread-id", "data-thread-perm-id"],
+});
+
+announceThreadChange();
 
 function ensureBadge() {
   if (document.getElementById("email-agent-badge")) return;
